@@ -1,4 +1,50 @@
 #!/bin/bash
+# ===== IP FUNCTIONS =====
+check_ip() {
+    IP=$(curl -s https://api.ipify.org)
+    if [ -z "$IP" ]; then
+        whiptail --title "IP Check" --msgbox "Unable to detect public IP." 8 50
+    else
+        whiptail --title "Public IP" --msgbox "Your Public IP is:\n\n$IP" 10 50
+    fi
+}
+
+change_ip() {
+    METHOD=$(whiptail --title "Change IP Address" --menu "Choose method:" 15 60 4 \
+    "1" "Renew DHCP" \
+    "2" "Restart Network" \
+    "3" "Back" \
+    3>&1 1>&2 2>&3)
+
+    case "$METHOD" in
+        1)
+            dhclient -r && dhclient
+            whiptail --msgbox "DHCP renewed." 8 40
+            ;;
+        2)
+            nmcli networking off
+            sleep 2
+            nmcli networking on
+            whiptail --msgbox "Network restarted." 8 40
+            ;;
+    esac
+}
+
+ip_menu() {
+    while true; do
+        CHOICE=$(whiptail --title "IP Menu" --menu "Choose an option:" 15 60 4 \
+        "1" "Check Public IP" \
+        "2" "Change IP" \
+        "3" "Back to Main Menu" \
+        3>&1 1>&2 2>&3)
+
+        case "$CHOICE" in
+            1) check_ip ;;
+            2) change_ip ;;
+            *) break ;;
+        esac
+    done
+}
 
 # ========================
 # SAFER Security Tool
