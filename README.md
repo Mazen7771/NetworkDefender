@@ -9,7 +9,7 @@ Check firewall, DNS, services, ports, and public IP. Generates detailed reports 
 - ✅ Security score & risk level
 - ✅ Restore DNS backup
 - ✅ View previous reports
-- ✅ Check / Change public IP
+- ✅ Check / Change public IP## Usage
 - ✅ Save custom-named reports
 - ✅ Optional silent mode for automation
 
@@ -19,3 +19,8 @@ Check firewall, DNS, services, ports, and public IP. Generates detailed reports 
 git clone https://github.com/<your-username>/SAFER-Security-Tool.git
 cd SAFER-Security-Tool
 chmod +x safer.sh
+
+## Usage
+
+```bash
+sudo ./safer.sh
