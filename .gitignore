@@ -1,0 +1,13 @@
+# Ignore temporary reports
+safer_report_tmp_*.txt
+
+# Ignore log files
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.swp
