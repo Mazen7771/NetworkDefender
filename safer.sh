@@ -57,10 +57,21 @@ run_scan() {
     echo "------------------------------------------" | tee -a "$REPORT"
     echo "Security Score: $SECURITY_SCORE / 100" | tee -a "$REPORT"
     echo "Risk Level: $RISK_LEVEL" | tee -a "$REPORT"
+whiptail --title "SAFER Finished" \
+--infobox "Scan completed successfully
 
-    whiptail --title "SAFER Finished" \
-    --msgbox "Scan completed successfully\n\nSecurity Score: $SECURITY_SCORE / 100\nRisk Level: $RISK_LEVEL\n\nReport saved as:\n$REPORT" 15 60
+Security Score: $SECURITY_SCORE / 100
+Risk Level: $RISK_LEVEL
+
+Report saved as:
+$REPORT
+
+Closing..." 15 60
+
+sleep 3
+
 }
+   
 
 # ===== IP FUNCTIONS =====
 check_ip() {
