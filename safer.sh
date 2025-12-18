@@ -1,15 +1,13 @@
 #!/bin/bash
-run_scan() {
 
+# ===== FUNCTION DEFINITIONS =====
+run_scan() {
     TEMP_REPORT="safer_report_tmp_$(date +%F_%H-%M-%S).txt"
     REPORT="$TEMP_REPORT"
-
     SECURITY_SCORE=100
     RISK_LEVEL="LOW"
 
-    deduct() {
-        SECURITY_SCORE=$((SECURITY_SCORE - $1))
-    }
+    deduct() { SECURITY_SCORE=$((SECURITY_SCORE - $1)); }
 
     echo "==========================================" | tee -a "$REPORT"
     echo "        SAFER Network Security Tool" | tee -a "$REPORT"
@@ -37,9 +35,7 @@ run_scan() {
 
     DNS_OK=0
     grep -E "1.1.1.1|9.9.9.9|8.8.8.8" /etc/resolv.conf && DNS_OK=1
-    if [ $DNS_OK -eq 0 ]; then
-        deduct 10
-    fi
+    if [ $DNS_OK -eq 0 ]; then deduct 10; fi
 
     echo "[*] Listing network interfaces..." | tee -a "$REPORT"
     ip a | tee -a "$REPORT"
@@ -47,18 +43,16 @@ run_scan() {
     echo "[*] Checking listening ports..." | tee -a "$REPORT"
     ss -tuln | tee -a "$REPORT"
 
-    # Risk level
-    if [ $SECURITY_SCORE -lt 60 ]; then
-        RISK_LEVEL="HIGH"
-    elif [ $SECURITY_SCORE -lt 80 ]; then
-        RISK_LEVEL="MEDIUM"
+    if [ $SECURITY_SCORE -lt 60 ]; then RISK_LEVEL="HIGH"
+    elif [ $SECURITY_SCORE -lt 80 ]; then RISK_LEVEL="MEDIUM"
     fi
 
     echo "------------------------------------------" | tee -a "$REPORT"
     echo "Security Score: $SECURITY_SCORE / 100" | tee -a "$REPORT"
     echo "Risk Level: $RISK_LEVEL" | tee -a "$REPORT"
-whiptail --title "SAFER Finished" \
---infobox "Scan completed successfully
+
+    whiptail --title "SAFER Finished" \
+    --infobox "Scan completed successfully
 
 Security Score: $SECURITY_SCORE / 100
 Risk Level: $RISK_LEVEL
@@ -67,13 +61,9 @@ Report saved as:
 $REPORT
 
 Closing..." 15 60
-
-sleep 3
-
+    sleep 3
 }
-   
 
-# ===== IP FUNCTIONS =====
 check_ip() {
     IP=$(curl -s https://api.ipify.org)
     if [ -z "$IP" ]; then
@@ -87,20 +77,18 @@ change_ip() {
     METHOD=$(whiptail --title "Change IP Address" --menu "Choose method:" 15 60 4 \
     "1" "Renew DHCP" \
     "2" "Restart Network" \
-    "3" "Back" \
-    3>&1 1>&2 2>&3)
+    "3" "Back" 3>&1 1>&2 2>&3)
+
+    exitstatus=$?
+    if [ $exitstatus != 0 ]; then return; fi  # Cancel returns to IP menu
 
     case "$METHOD" in
-        1)
-            dhclient -r && dhclient
-            whiptail --msgbox "DHCP renewed." 8 40
-            ;;
-        2)
-            nmcli networking off
-            sleep 2
-            nmcli networking on
-            whiptail --msgbox "Network restarted." 8 40
-            ;;
+        1) dhclient -r && dhclient
+           whiptail --msgbox "DHCP renewed." 8 40 ;;
+        2) nmcli networking off
+           sleep 2
+           nmcli networking on
+           whiptail --msgbox "Network restarted." 8 40 ;;
     esac
 }
 
@@ -109,8 +97,10 @@ ip_menu() {
         CHOICE=$(whiptail --title "IP Menu" --menu "Choose an option:" 15 60 4 \
         "1" "Check Public IP" \
         "2" "Change IP" \
-        "3" "Back to Main Menu" \
-        3>&1 1>&2 2>&3)
+        "3" "Back to Main Menu" 3>&1 1>&2 2>&3)
+
+        exitstatus=$?
+        if [ $exitstatus != 0 ]; then break; fi  # Cancel goes back to main menu
 
         case "$CHOICE" in
             1) check_ip ;;
@@ -119,18 +109,28 @@ ip_menu() {
         esac
     done
 }
-OPTION=$(whiptail --title "SAFER Main Menu" --menu "Choose an action:" 18 65 7 \
-"1" "Run Full Security Scan" \
-"2" "Restore DNS Backup" \
-"3" "View Report" \
-"4" "Check / Change IP Address" \
-"5" "Exit" \
-3>&1 1>&2 2>&3)
 
-exitstatus=$?
-if [ $exitstatus != 0 ]; then
-    exit 0
-fi
+# ===== MAIN MENU LOOP =====
+while true; do
+    OPTION=$(whiptail --title "SAFER Main Menu" --menu "Choose an action:" 18 65 7 \
+    "1" "Run Full Security Scan" \
+    "2" "Restore DNS Backup" \
+    "3" "View Report" \
+    "4" "Check / Change IP Address" \
+    "5" "Exit" 3>&1 1>&2 2>&3)
+
+    exitstatus=$?
+    if [ $exitstatus != 0 ]; then exit 0; fi  # Cancel / Esc closes script
+
+    case "$OPTION" in
+        1) run_scan ;;
+        2) cp /etc/resolv.conf.backup /etc/resolv.conf
+           whiptail --msgbox "DNS restored successfully." 8 50 ;;
+        3) ./view_reports.sh ;;
+        4) ip_menu ;;
+        5) exit 0 ;;
+    esac
+done
 
 
 # ========================
