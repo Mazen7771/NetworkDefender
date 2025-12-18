@@ -16,7 +16,7 @@ Check firewall, DNS, services, ports, and public IP. Generates detailed reports 
 ## Installation
 
 ```bash
-git clone https://github.com/<your-username>/SAFER-Security-Tool.git
+git clone https://github.com/Mazen7771/SAFER-Security-Tool.git
 cd SAFER-Security-Tool
 chmod +x safer.sh
 
