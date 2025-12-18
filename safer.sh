@@ -1,4 +1,67 @@
 #!/bin/bash
+run_scan() {
+
+    TEMP_REPORT="safer_report_tmp_$(date +%F_%H-%M-%S).txt"
+    REPORT="$TEMP_REPORT"
+
+    SECURITY_SCORE=100
+    RISK_LEVEL="LOW"
+
+    deduct() {
+        SECURITY_SCORE=$((SECURITY_SCORE - $1))
+    }
+
+    echo "==========================================" | tee -a "$REPORT"
+    echo "        SAFER Network Security Tool" | tee -a "$REPORT"
+    echo "        Defensive & Legal Use Only" | tee -a "$REPORT"
+    echo "==========================================" | tee -a "$REPORT"
+
+    echo "[*] Checking internet connectivity..." | tee -a "$REPORT"
+    if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+        echo "[✓] Internet connected" | tee -a "$REPORT"
+    else
+        echo "[!] No internet connection" | tee -a "$REPORT"
+        deduct 20
+    fi
+
+    echo "[*] Checking firewall status..." | tee -a "$REPORT"
+    if systemctl is-active --quiet ufw; then
+        echo "[✓] Firewall active" | tee -a "$REPORT"
+    else
+        echo "[!] Firewall inactive" | tee -a "$REPORT"
+        deduct 20
+    fi
+
+    echo "[*] Checking DNS configuration..." | tee -a "$REPORT"
+    cat /etc/resolv.conf | tee -a "$REPORT"
+
+    DNS_OK=0
+    grep -E "1.1.1.1|9.9.9.9|8.8.8.8" /etc/resolv.conf && DNS_OK=1
+    if [ $DNS_OK -eq 0 ]; then
+        deduct 10
+    fi
+
+    echo "[*] Listing network interfaces..." | tee -a "$REPORT"
+    ip a | tee -a "$REPORT"
+
+    echo "[*] Checking listening ports..." | tee -a "$REPORT"
+    ss -tuln | tee -a "$REPORT"
+
+    # Risk level
+    if [ $SECURITY_SCORE -lt 60 ]; then
+        RISK_LEVEL="HIGH"
+    elif [ $SECURITY_SCORE -lt 80 ]; then
+        RISK_LEVEL="MEDIUM"
+    fi
+
+    echo "------------------------------------------" | tee -a "$REPORT"
+    echo "Security Score: $SECURITY_SCORE / 100" | tee -a "$REPORT"
+    echo "Risk Level: $RISK_LEVEL" | tee -a "$REPORT"
+
+    whiptail --title "SAFER Finished" \
+    --msgbox "Scan completed successfully\n\nSecurity Score: $SECURITY_SCORE / 100\nRisk Level: $RISK_LEVEL\n\nReport saved as:\n$REPORT" 15 60
+}
+
 # ===== IP FUNCTIONS =====
 check_ip() {
     IP=$(curl -s https://api.ipify.org)
