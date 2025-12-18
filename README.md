@@ -22,7 +22,7 @@ Check firewall, DNS, services, ports, and public IP. Generates detailed reports 
 git clone https://github.com/Mazen7771/NetworkDefender.git
 
 # Enter the folder
-cd safersudo 
+cd NetworkDefender
 
 # Make the main script executable
 chmod +x safer.sh
