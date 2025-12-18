@@ -119,6 +119,19 @@ ip_menu() {
         esac
     done
 }
+OPTION=$(whiptail --title "SAFER Main Menu" --menu "Choose an action:" 18 65 7 \
+"1" "Run Full Security Scan" \
+"2" "Restore DNS Backup" \
+"3" "View Report" \
+"4" "Check / Change IP Address" \
+"5" "Exit" \
+3>&1 1>&2 2>&3)
+
+exitstatus=$?
+if [ $exitstatus != 0 ]; then
+    exit 0
+fi
+
 
 # ========================
 # SAFER Security Tool
